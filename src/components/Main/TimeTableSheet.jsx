@@ -18,19 +18,20 @@ const TimeTableSheet = () => {
   const drawCircle = () => {
     context.beginPath();
     context.lineWidth = 0;
-    context.fillStyle = 'white';
+    context.fillStyle = '#f0f0f0';
     context.arc(CANVAS_SIZE / 2, CANVAS_SIZE / 2, RADIUS, 0, Math.PI * 2, true);
     context.fill();
   };
 
   const drawDashLineAndTime = () => {
     context.strokeStyle = COLOR.lightGrey;
-    context.fillStyle = 'black';
-    context.font = `${TIME_FONT_SIZE} sans-serif`;
+    context.fillStyle = '#bdbdbd';
+    context.strokeStyle = 'white';
+    context.font = `${TIME_FONT_SIZE} Fugaz One`;
 
     for (let i = 1; i <= PARTITION_COUNT; i += 1) {
       const { x, y } = getCoordinatesFromRadius(RADIUS, THETA * i);
-      context.setLineDash(i % HOUR_PARTITION === 0 ? [0] : [2, 4]);
+      context.lineWidth = i % HOUR_PARTITION === 0 ? 1.5 : 0.5;
       context.beginPath();
       context.moveTo(CANVAS_SIZE / 2, CANVAS_SIZE / 2);
       context.lineTo(x, y);
@@ -43,8 +44,10 @@ const TimeTableSheet = () => {
         ? Math.ceil(i / HOUR_PARTITION) - 12
         : i / HOUR_PARTITION;
       const timeTextMeasure = context.measureText(time);
-      const { x: timeX, y: timeY } = getCoordinatesFromRadius(RADIUS + 10, THETA * i);
-      context.fillText(time, timeX - timeTextMeasure.width / 2, timeY + 8);
+      const TIME_TEXT_MARGIN = 15;
+      const TIME_TEXT_OFFSET = 7;
+      const { x: timeX, y: timeY } = getCoordinatesFromRadius(RADIUS + TIME_TEXT_MARGIN, THETA * i);
+      context.fillText(time, timeX - timeTextMeasure.width / 2, timeY + TIME_TEXT_OFFSET);
     }
   };
 

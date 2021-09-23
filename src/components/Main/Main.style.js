@@ -7,7 +7,6 @@ const Main = styled.main`
 
 const Canvas = styled.canvas`
   border-radius: 50%;
-  margin: 10px;
   cursor: pointer;
   position: absolute;
   left: 0;

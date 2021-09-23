@@ -1,7 +1,7 @@
 import { RecoilRoot } from 'recoil';
 import styled from 'styled-components';
 import Aside from './components/Aside/Aside';
-import Logo from './components/Header/Logo';
+import Header from './components/Header/Header';
 import Main from './components/Main/Main';
 import Navigation from './components/Navigation/Navigation';
 import COLOR from './utils/color';
@@ -20,7 +20,9 @@ const ContentContainer = styled.div`
   nav {
     flex: 1;
     min-width: 250px;
-    background-color: ${COLOR.pointColor};
+    background-color: #2F45C5;
+    border-radius: 15px;
+    margin: 0 20px
   }
 
   main {
@@ -31,7 +33,9 @@ const ContentContainer = styled.div`
   aside {
     flex: 1;
     min-width: 250px;
-    background-color: ${COLOR.pointColor};
+    background-color: #2F45C5;
+    border-radius: 15px;
+    margin: 0 20px
   }
 `;
 
@@ -39,7 +43,7 @@ function App() {
   return (
     <RecoilRoot>
       <AppContainer>
-        <Logo />
+        <Header />
         <ContentContainer>
           <Navigation />
           <Main />

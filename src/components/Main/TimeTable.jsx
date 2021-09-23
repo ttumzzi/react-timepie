@@ -38,7 +38,8 @@ const TimeTable = () => {
 
   const drawCircularSector = (startMin, endMin, color) => {
     const angleOffset = Math.PI * (3 / 2);
-    const startAngle = (startMin / 720) * Math.PI + angleOffset;
+    const HOUR24_TO_MIN = 24 * 60;
+    const startAngle = (startMin / HOUR24_TO_MIN) * (Math.PI * 2) + angleOffset;
     const endAngle = (endMin / 720) * Math.PI + angleOffset;
 
     context.fillStyle = color;

@@ -1,8 +1,6 @@
 const getColorById = (id) => {
   const colors = [
-    '#FFB246',
     '#52D08C',
-    '#DE3F87',
     '#416BF0',
     '#16F27F',
     '#663AE6',

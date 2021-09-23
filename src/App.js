@@ -20,7 +20,7 @@ const ContentContainer = styled.div`
   nav {
     flex: 1;
     min-width: 250px;
-    background-color: #2F45C5;
+    background-color: #FF488E;
     border-radius: 15px;
     margin: 0 20px
   }
@@ -33,7 +33,7 @@ const ContentContainer = styled.div`
   aside {
     flex: 1;
     min-width: 250px;
-    background-color: #2F45C5;
+    background-color: #FF488E;
     border-radius: 15px;
     margin: 0 20px
   }

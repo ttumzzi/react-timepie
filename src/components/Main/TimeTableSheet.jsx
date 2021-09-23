@@ -3,7 +3,7 @@ import * as Styled from './Main.style';
 import COLOR from '../../utils/color';
 import {
   CANVAS_SIZE, HOUR_PARTITION, PARTITION_COUNT, RADIUS, THETA, TIME_FONT_SIZE,
-} from './canvas_constant';
+} from '../../utils/canvas_constant';
 
 const TimeTableSheet = () => {
   const canvas = useRef(null);

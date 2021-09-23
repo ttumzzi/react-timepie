@@ -1,5 +1,5 @@
 const CANVAS_SIZE = 800;
-const CANVAS_MARGIN = 20;
+const CANVAS_MARGIN = 25;
 const RADIUS = (CANVAS_SIZE / 2) - CANVAS_MARGIN;
 const TIME_FONT_SIZE = '16px';
 const HOUR_PARTITION = 6;

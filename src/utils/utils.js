@@ -1,19 +1,18 @@
 const getColorById = (id) => {
   const colors = [
-    '#F9E284',
-    '#F9B6F0',
-    '#E1F9B6',
-    '#B6D8F9',
-    '#B66FF9',
-    '#616FF9',
-    '#45DEAE',
-    '#93E6E1',
-    '#E69E93',
-    '#E0B296',
-    '#16F27F',
-    '#2EBEE8',
+    '#FFB246',
+    '#52D08C',
+    '#DE3F87',
     '#416BF0',
+    '#16F27F',
+    '#663AE6',
+    '#6FE328',
+    '#E1F9B6',
+    '#616FF9',
+    '#21C4DA',
     '#D448EC',
+    '#473DE0',
+    '#FF4560',
   ];
   const index = id % (colors.length);
   return colors[index];

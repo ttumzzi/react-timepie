@@ -1,24 +1,52 @@
-import logo from './logo.svg';
-import './App.css';
+import { RecoilRoot } from 'recoil';
+import styled from 'styled-components';
+import Aside from './components/Aside/Aside';
+import Logo from './components/Header/Logo';
+import Main from './components/Main/Main';
+import Navigation from './components/Navigation/Navigation';
+import COLOR from './utils/color';
+
+const AppContainer = styled.div`
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+`;
+
+const ContentContainer = styled.div`
+  display: flex;
+  height: 88%;
+  
+  nav {
+    flex: 1;
+    min-width: 250px;
+    background-color: ${COLOR.pointColor};
+  }
+
+  main {
+    flex: 4;
+    min-width: 800px;
+  }
+
+  aside {
+    flex: 1;
+    min-width: 250px;
+    background-color: ${COLOR.pointColor};
+  }
+`;
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <RecoilRoot>
+      <AppContainer>
+        <Logo />
+        <ContentContainer>
+          <Navigation />
+          <Main />
+          <Aside />
+        </ContentContainer>
+      </AppContainer>
+    </RecoilRoot>
   );
 }
 

@@ -1,10 +1,31 @@
 import { useRef, useState } from 'react';
 import { useEffect } from 'react/cjs/react.development';
+import { getColorById } from '../../utils/utils';
 import { CANVAS_SIZE, RADIUS, THETA } from './canvas_constant';
 import * as Styled from './Main.style';
 
 const TimeTable = () => {
   const MIDDLE = CANVAS_SIZE / 2;
+  const fakeData = [
+    {
+      id: 1,
+      name: 'sleep',
+      startMin: 1320, // 22:00
+      endMin: 360, // 6:00
+    },
+    {
+      id: 2,
+      name: 'workout',
+      startMin: 620, // 10:20
+      endMin: 670, // 11: 10
+    },
+    {
+      id: 3,
+      name: 'play with puppy💜',
+      startMin: 870, // 14:30
+      endMin: 890, // 14:50
+    },
+  ];
 
   const canvas = useRef(null);
   const [context, setContext] = useState(null);
@@ -15,7 +36,19 @@ const TimeTable = () => {
     return { x, y };
   };
 
-  const drawCircularSector = (x, y) => {
+  const drawCircularSector = (startMin, endMin, color) => {
+    const angleOffset = Math.PI * (3 / 2);
+    const startAngle = (startMin / 720) * Math.PI + angleOffset;
+    const endAngle = (endMin / 720) * Math.PI + angleOffset;
+
+    context.fillStyle = color;
+    context.beginPath();
+    context.moveTo(MIDDLE, MIDDLE);
+    context.arc(MIDDLE, MIDDLE, RADIUS, startAngle, endAngle, false);
+    context.fill();
+  };
+
+  const drawCircularSectorUsingCoordinates = (x, y) => {
     const adjustedX = x - MIDDLE;
     const adjustedY = MIDDLE - y;
     const angle = Math.atan(adjustedX / adjustedY);
@@ -32,11 +65,11 @@ const TimeTable = () => {
   const onMouseDown = (mouseDownEvent) => {
     const { target } = mouseDownEvent;
     const { x, y } = getCoordinatesInCanvas(mouseDownEvent);
-    drawCircularSector(x, y);
+    drawCircularSectorUsingCoordinates(x, y);
 
     function handleMouseMove(mouseMoveEvent) {
       const { x: nextX, y: nextY } = getCoordinatesInCanvas(mouseMoveEvent);
-      drawCircularSector(nextX, nextY);
+      drawCircularSectorUsingCoordinates(nextX, nextY);
     }
 
     function handleMouseUp(e) {
@@ -54,6 +87,10 @@ const TimeTable = () => {
     if (!context) return;
 
     console.log('context start');
+    fakeData.forEach(({ id, startMin, endMin }) => {
+      const color = getColorById(id);
+      drawCircularSector(startMin, endMin, color);
+    });
   }, [context]);
 
   useEffect(() => {

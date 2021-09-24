@@ -4,10 +4,10 @@ import COLOR from '../../utils/color';
 import {
   CANVAS_SIZE, HOUR_PARTITION, PARTITION_COUNT, RADIUS, THETA, TIME_FONT_SIZE,
 } from '../../utils/canvas_constant';
+import useCanvas from '../../hook/useCanvas';
 
 const TimeTableSheet = () => {
-  const canvas = useRef(null);
-  const [context, setContext] = useState(null);
+  const [canvas, context] = useCanvas();
 
   const getCoordinatesFromRadius = (radius, theta) => {
     const x = CANVAS_SIZE / 2 + ((radius) * Math.sin(theta));
@@ -62,12 +62,6 @@ const TimeTableSheet = () => {
 
     drawOutline();
   }, [context]);
-
-  useEffect(() => {
-    if (!canvas) return;
-
-    setContext(canvas.current.getContext('2d'));
-  }, [canvas]);
 
   return (
     <Styled.Canvas

@@ -5,12 +5,11 @@ import { CANVAS_SIZE } from '../../utils/canvas_constant';
 import * as Styled from './Main.style';
 import { scheduleState } from '../../recoil/SCHEDULE';
 import { clearCanvas, drawCircularSectorByTime } from '../../utils/canvas';
+import useCanvas from '../../hook/useCanvas';
 
 const TimeTable = () => {
   const [schedule, setSchedule] = useRecoilState(scheduleState);
-
-  const canvas = useRef(null);
-  const [context, setContext] = useState(null);
+  const [canvas, context] = useCanvas();
 
   useEffect(() => {
     if (!context || !schedule) return;
@@ -20,12 +19,6 @@ const TimeTable = () => {
       drawCircularSectorByTime(context, startMin, endMin);
     });
   }, [context, schedule]);
-
-  useEffect(() => {
-    if (!canvas) return;
-
-    setContext(canvas.current.getContext('2d'));
-  }, [canvas]);
 
   return (
     <Styled.Canvas

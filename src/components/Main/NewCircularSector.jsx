@@ -1,17 +1,16 @@
 import { useRef } from 'react';
 import { useEffect, useState } from 'react/cjs/react.development';
 import { useRecoilState } from 'recoil';
+import useCanvas from '../../hook/useCanvas';
 import { scheduleState } from '../../recoil/SCHEDULE';
 import {
   clearCanvas, drawCircularSectorByTime, getCoordinatesInCanvas, getTimeByCoordinates,
 } from '../../utils/canvas';
-import { CANVAS_MIDDLE, CANVAS_SIZE, THETA } from '../../utils/canvas_constant';
-import { getColorById } from '../../utils/utils';
+import { CANVAS_SIZE } from '../../utils/canvas_constant';
 import * as Styled from './Main.style';
 
 const NewCircularSector = () => {
-  const canvas = useRef(null);
-  const [context, setContext] = useState(null);
+  const [canvas, context] = useCanvas();
   const [currentStartMin, setStartMin] = useState();
   const [currentEndMin, setEndMin] = useState();
   const [schedule, setSchedule] = useRecoilState(scheduleState);
@@ -83,12 +82,6 @@ const NewCircularSector = () => {
       Math.max(currentStartMin, currentEndMin),
       color);
   }, [currentStartMin, currentEndMin]);
-
-  useEffect(() => {
-    if (!canvas) return;
-
-    setContext(canvas.current.getContext('2d'));
-  }, [canvas]);
 
   return (
     <Styled.Canvas

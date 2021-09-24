@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { useEffect, useState } from 'react/cjs/react.development';
 import { useRecoilState } from 'recoil';
 import useCanvas from '../../hook/useCanvas';
@@ -6,18 +5,19 @@ import { scheduleState } from '../../recoil/SCHEDULE';
 import {
   clearCanvas, drawCircularSectorByTime, getCoordinatesInCanvas, getTimeByCoordinates,
 } from '../../utils/canvas';
-import { CANVAS_SIZE } from '../../utils/canvas_constant';
+import { CANVAS_SIZE, HOUR_PARTITION } from '../../utils/canvas_constant';
 import * as Styled from './Main.style';
 
 const NewCircularSector = () => {
+  const TIME_UNIT = 60 / HOUR_PARTITION;
   const [canvas, context] = useCanvas();
-  const [currentStartMin, setStartMin] = useState();
-  const [currentEndMin, setEndMin] = useState();
+  const [currentStartTime, setStartTime] = useState();
+  const [currentEndTime, setEndTime] = useState();
   const [schedule, setSchedule] = useRecoilState(scheduleState);
 
   const initTime = () => {
-    setStartMin(null);
-    setEndMin(null);
+    setStartTime(null);
+    setEndTime(null);
   };
 
   const isFilled = (minute) => {
@@ -31,6 +31,11 @@ const NewCircularSector = () => {
     return isFilledFlag;
   };
 
+  const isOutOfRange = (startTime, endTime, minTimeRange, maxTimeRange) => startTime < minTimeRange
+  || endTime > maxTimeRange;
+
+  const isCounterClockwise = (startTime, endTime) => startTime >= endTime;
+
   const getMovableRange = (currentMinute) => {
     let minimum = 0;
     let maximum = 60 * 24;
@@ -43,45 +48,65 @@ const NewCircularSector = () => {
     return [minimum, maximum];
   };
 
+  const getEndTimeByEvent = (event) => {
+    const { x, y } = getCoordinatesInCanvas(event);
+    const endTime = getTimeByCoordinates(x, y) + TIME_UNIT;
+    return endTime;
+  };
+
+  const setAdjustedTime = (startTime, endTime, minTime, maxTime) => {
+    let adjustedStartTime;
+    let adjustedEndTime;
+
+    if (isCounterClockwise(startTime, endTime)) {
+      adjustedStartTime = Math.max(endTime, minTime) - TIME_UNIT;
+      adjustedEndTime = startTime + TIME_UNIT;
+    } else {
+      adjustedStartTime = startTime;
+      adjustedEndTime = Math.max(endTime, minTime);
+    }
+
+    if (isOutOfRange(adjustedStartTime, adjustedEndTime, minTime, maxTime)) return;
+
+    setStartTime(adjustedStartTime);
+    setEndTime(adjustedEndTime);
+  };
+
   const onMouseDown = (mouseDownEvent) => {
     initTime();
     const { target } = mouseDownEvent;
     const { x, y } = getCoordinatesInCanvas(mouseDownEvent);
-    const startMin = getTimeByCoordinates(x, y);
-    if (isFilled(startMin)) return;
+    const startTime = getTimeByCoordinates(x, y);
+    if (isFilled(startTime)) return;
 
-    const [minimum, maximum] = getMovableRange(startMin);
-    setStartMin(startMin);
+    const [minTime, maxTime] = getMovableRange(startTime);
+    setStartTime(startTime);
 
-    function handleMouseMove(mouseMoveEvent) {
-      const { x: nextX, y: nextY } = getCoordinatesInCanvas(mouseMoveEvent);
-      const endMin = getTimeByCoordinates(nextX, nextY);
-      if (endMin < minimum || endMin > maximum) return;
-      setEndMin(endMin < startMin ? Math.max(endMin, minimum) : Math.min(endMin, maximum));
-    }
+    const onMouseMove = (event) => {
+      const endTime = getEndTimeByEvent(event);
+      setAdjustedTime(startTime, endTime, minTime, maxTime);
+    };
 
-    function handleMouseUp(e) {
-      target.removeEventListener('mousemove', handleMouseMove);
-      const { x: endX, y: endY } = getCoordinatesInCanvas(e);
-      const endMin = getTimeByCoordinates(endX, endY);
-      setEndMin(endMin < startMin ? Math.max(endMin, minimum) : Math.min(endMin, maximum));
-    }
+    const onMouseUp = (event) => {
+      target.removeEventListener('mousemove', onMouseMove);
+      const endTime = getEndTimeByEvent(event);
+      setAdjustedTime(startTime, endTime, minTime, maxTime);
+    };
 
-    target.removeEventListener('mouseup', handleMouseUp);
-    target.addEventListener('mousemove', handleMouseMove);
-    target.addEventListener('mouseup', handleMouseUp);
+    const onClick = () => target.removeEventListener('mouseup', onMouseUp);
+
+    target.addEventListener('mousemove', onMouseMove);
+    target.addEventListener('mouseup', onMouseUp);
+    target.addEventListener('click', onClick);
   };
 
   useEffect(() => {
-    if (!currentStartMin || !currentEndMin) return;
+    if (!currentStartTime || !currentEndTime) return;
 
     const color = '#FF488E';
     clearCanvas(context);
-    drawCircularSectorByTime(context,
-      Math.min(currentStartMin, currentEndMin),
-      Math.max(currentStartMin, currentEndMin),
-      color);
-  }, [currentStartMin, currentEndMin]);
+    drawCircularSectorByTime(context, currentStartTime, currentEndTime, color);
+  }, [currentStartTime, currentEndTime]);
 
   return (
     <Styled.Canvas

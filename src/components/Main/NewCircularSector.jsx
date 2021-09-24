@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react/cjs/react.development';
 import { useRecoilState } from 'recoil';
 import useCanvas from '../../hook/useCanvas';
 import { scheduleState } from '../../recoil/SCHEDULE';
+import { clearCanvas, drawCircularSectorByTime } from '../../utils/canvas';
 import {
-  clearCanvas, drawCircularSectorByTime, getCoordinatesInCanvas, getTimeByCoordinates,
-} from '../../utils/canvas';
-import { CANVAS_SIZE, HOUR_PARTITION } from '../../utils/canvas_constant';
+  CANVAS_MIDDLE, CANVAS_SIZE, HOUR_PARTITION, THETA,
+} from '../../utils/canvas_constant';
+import COLOR from '../../utils/color';
 import * as Styled from './Main.style';
 
 const NewCircularSector = () => {
@@ -35,6 +36,33 @@ const NewCircularSector = () => {
   || endTime > maxTimeRange;
 
   const isCounterClockwise = (startTime, endTime) => startTime >= endTime;
+
+  const getTimeByCoordinates = (x, y) => {
+    const SPACES_COUNT_IN_QUARTER = 6 * HOUR_PARTITION;
+    const adjustedX = x - CANVAS_MIDDLE;
+    const adjustedY = CANVAS_MIDDLE - y;
+    const angle = Math.atan(adjustedX / adjustedY);
+    const time = Math.floor(angle / THETA);
+    if (time >= 0 && adjustedX >= 0) {
+      return time * TIME_UNIT;
+    }
+    if (time <= 0 && adjustedX >= 0) {
+      return (2 * SPACES_COUNT_IN_QUARTER + time) * TIME_UNIT;
+    }
+    if (time >= 0 && adjustedX <= 0) {
+      return (2 * SPACES_COUNT_IN_QUARTER + time) * TIME_UNIT;
+    }
+    if (time <= 0 && adjustedX <= 0) {
+      return (4 * SPACES_COUNT_IN_QUARTER + time) * TIME_UNIT;
+    }
+    return 0;
+  };
+
+  const getCoordinatesInCanvas = ({ clientX, clientY, target }) => {
+    const x = clientX - target.getBoundingClientRect().left;
+    const y = clientY - target.getBoundingClientRect().top;
+    return { x, y };
+  };
 
   const getMovableRange = (currentMinute) => {
     let minimum = 0;
@@ -103,9 +131,8 @@ const NewCircularSector = () => {
   useEffect(() => {
     if (!currentStartTime || !currentEndTime) return;
 
-    const color = '#FF488E';
     clearCanvas(context);
-    drawCircularSectorByTime(context, currentStartTime, currentEndTime, color);
+    drawCircularSectorByTime(context, currentStartTime, currentEndTime, COLOR.primaryColor);
   }, [currentStartTime, currentEndTime]);
 
   return (

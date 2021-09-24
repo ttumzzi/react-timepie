@@ -1,5 +1,5 @@
 const COLOR = {
-  primaryColor: '#ffb637',
+  primaryColor: '#FF488E',
   pointColor: '#268AFF',
   lightGrey: '#bdbdbd',
 };

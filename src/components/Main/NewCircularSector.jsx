@@ -12,14 +12,7 @@ import * as Styled from './Main.style';
 const NewCircularSector = () => {
   const TIME_UNIT = 60 / HOUR_PARTITION;
   const [canvas, context] = useCanvas();
-  const [currentStartTime, setStartTime] = useState();
-  const [currentEndTime, setEndTime] = useState();
   const [schedule, setSchedule] = useRecoilState(scheduleState);
-
-  const initTime = () => {
-    setStartTime(null);
-    setEndTime(null);
-  };
 
   const isFilled = (minute) => {
     let isFilledFlag = false;
@@ -82,6 +75,11 @@ const NewCircularSector = () => {
     return endTime;
   };
 
+  const draw = (startTime, endTime) => {
+    clearCanvas(context);
+    drawCircularSectorByTime(context, startTime, endTime, COLOR.primaryColor);
+  };
+
   const setAdjustedTime = (startTime, endTime, minTime, maxTime) => {
     let adjustedStartTime;
     let adjustedEndTime;
@@ -96,19 +94,16 @@ const NewCircularSector = () => {
 
     if (isOutOfRange(adjustedStartTime, adjustedEndTime, minTime, maxTime)) return;
 
-    setStartTime(adjustedStartTime);
-    setEndTime(adjustedEndTime);
+    draw(adjustedStartTime, adjustedEndTime);
   };
 
   const onMouseDown = (mouseDownEvent) => {
-    initTime();
     const { target } = mouseDownEvent;
     const { x, y } = getCoordinatesInCanvas(mouseDownEvent);
     const startTime = getTimeByCoordinates(x, y);
     if (isFilled(startTime)) return;
 
     const [minTime, maxTime] = getMovableRange(startTime);
-    setStartTime(startTime);
 
     const onMouseMove = (event) => {
       const endTime = getEndTimeByEvent(event);
@@ -127,13 +122,6 @@ const NewCircularSector = () => {
     target.addEventListener('mouseup', onMouseUp);
     target.addEventListener('click', onClick);
   };
-
-  useEffect(() => {
-    if (!currentStartTime || !currentEndTime) return;
-
-    clearCanvas(context);
-    drawCircularSectorByTime(context, currentStartTime, currentEndTime, COLOR.primaryColor);
-  }, [currentStartTime, currentEndTime]);
 
   return (
     <Styled.Canvas

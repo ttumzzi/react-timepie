@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react/cjs/react.development';
 import { useRecoilState } from 'recoil';
 import useCanvas from '../../hook/useCanvas';
 import { scheduleState } from '../../recoil/SCHEDULE';
-import { clearCanvas, drawCircularSectorByTime } from '../../utils/canvas';
+import { clearCanvas, drawCircularSector } from '../../utils/canvas';
 import {
   CANVAS_MIDDLE, CANVAS_SIZE, HOUR_PARTITION, THETA,
 } from '../../utils/canvas_constant';
-import COLOR from '../../utils/color';
+import { getAngleMovement, isClockwise } from '../../utils/vector';
 import * as Styled from './Main.style';
 
 const NewCircularSector = () => {
@@ -14,106 +13,116 @@ const NewCircularSector = () => {
   const [canvas, context] = useCanvas();
   const [schedule, setSchedule] = useRecoilState(scheduleState);
 
-  const isFilled = (minute) => {
+  const getAngleByMinutes = (minutes) => (minutes / TIME_UNIT) * THETA;
+
+  const isFilled = (angle) => {
     let isFilledFlag = false;
 
     schedule.forEach(({ startMin, endMin }) => {
-      if (minute >= startMin && minute < endMin) isFilledFlag = true;
-      if (startMin > endMin && (minute >= startMin || minute < endMin)) isFilledFlag = true;
+      const startAngle = getAngleByMinutes(startMin);
+      const endAngle = getAngleByMinutes(endMin);
+      if (angle >= startAngle && angle < endAngle) isFilledFlag = true;
+      if (startAngle > endAngle && (angle >= startAngle || angle < endAngle)) isFilledFlag = true;
     });
 
     return isFilledFlag;
   };
 
-  const isOutOfRange = (startTime, endTime, minTimeRange, maxTimeRange) => startTime < minTimeRange
-  || endTime > maxTimeRange;
+  const getAngleByCoordinates = (x, y) => {
+    const angle = Math.floor(Math.atan(x / y) / THETA) * THETA;
 
-  const isCounterClockwise = (startTime, endTime) => startTime >= endTime;
-
-  const getTimeByCoordinates = (x, y) => {
-    const SPACES_COUNT_IN_QUARTER = 6 * HOUR_PARTITION;
-    const adjustedX = x - CANVAS_MIDDLE;
-    const adjustedY = CANVAS_MIDDLE - y;
-    const angle = Math.atan(adjustedX / adjustedY);
-    const time = Math.floor(angle / THETA);
-    if (time >= 0 && adjustedX >= 0) {
-      return time * TIME_UNIT;
+    if (x >= 0 && y >= 0) {
+      return angle;
     }
-    if (time <= 0 && adjustedX >= 0) {
-      return (2 * SPACES_COUNT_IN_QUARTER + time) * TIME_UNIT;
+    if (x >= 0 && y <= 0) {
+      return Math.PI + angle;
     }
-    if (time >= 0 && adjustedX <= 0) {
-      return (2 * SPACES_COUNT_IN_QUARTER + time) * TIME_UNIT;
+    if (x < 0 && y < 0) {
+      return Math.PI + angle;
     }
-    if (time <= 0 && adjustedX <= 0) {
-      return (4 * SPACES_COUNT_IN_QUARTER + time) * TIME_UNIT;
+    if (x <= 0 && y >= 0) {
+      return 2 * Math.PI + angle;
     }
     return 0;
   };
 
   const getCoordinatesInCanvas = ({ clientX, clientY, target }) => {
-    const x = clientX - target.getBoundingClientRect().left;
-    const y = clientY - target.getBoundingClientRect().top;
+    const x = (clientX - target.getBoundingClientRect().left) - CANVAS_MIDDLE;
+    const y = CANVAS_MIDDLE - (clientY - target.getBoundingClientRect().top);
     return { x, y };
   };
 
-  const getMovableRange = (currentMinute) => {
+  const getMovableRange = (angle) => {
     let minimum = 0;
-    let maximum = 60 * 24;
+    let maximum = 2 * Math.PI;
 
     schedule.forEach(({ startMin, endMin }) => {
-      if (endMin <= currentMinute && endMin > minimum) minimum = endMin;
-      if (startMin >= currentMinute && startMin < maximum) maximum = startMin;
+      const startAngle = getAngleByMinutes(startMin);
+      const endAngle = getAngleByMinutes(endMin);
+      if (endAngle <= angle && endAngle > minimum) minimum = endAngle;
+      if (startAngle >= angle && startAngle < maximum) maximum = startAngle;
     });
+
+    if (minimum === 0) {
+      minimum = schedule.reduce((acc, { endMin }) => {
+        const endAngle = getAngleByMinutes(endMin);
+        return (acc < endAngle ? endAngle : acc);
+      }, 0);
+    }
+    if (maximum === 2 * Math.PI) {
+      maximum = schedule.reduce((acc, { startMin }) => {
+        const startAngle = getAngleByMinutes(startMin);
+        return (acc > startAngle ? startAngle : acc);
+      }, 2 * Math.PI);
+    }
+
+    if (minimum > maximum) maximum += Math.PI * 2;
 
     return [minimum, maximum];
   };
 
-  const getEndTimeByEvent = (event) => {
-    const { x, y } = getCoordinatesInCanvas(event);
-    const endTime = getTimeByCoordinates(x, y) + TIME_UNIT;
-    return endTime;
-  };
-
-  const draw = (startTime, endTime) => {
+  const draw = (startAngle, endAngle, clockwise = true) => {
     clearCanvas(context);
-    drawCircularSectorByTime(context, startTime, endTime, COLOR.primaryColor);
+    drawCircularSector(context, startAngle, endAngle, clockwise);
   };
 
-  const setAdjustedTime = (startTime, endTime, minTime, maxTime) => {
-    let adjustedStartTime;
-    let adjustedEndTime;
+  const move = (startX, startY, endX, endY, minAngle, maxAngle) => {
+    const startAngle = getAngleByCoordinates(startX, startY);
+    const clockwise = isClockwise(startX, startY, endX, endY);
+    const angleMovement = getAngleMovement(startX, startY, endX, endY, clockwise);
 
-    if (isCounterClockwise(startTime, endTime)) {
-      adjustedStartTime = Math.max(endTime, minTime) - TIME_UNIT;
-      adjustedEndTime = startTime + TIME_UNIT;
+    let adjustedStartAngle = startAngle;
+    let adjustedEndAngle = startAngle + angleMovement * (clockwise ? 1 : -1);
+
+    if (clockwise) {
+      adjustedStartAngle = Math.max(adjustedStartAngle, minAngle);
+      adjustedEndAngle = Math.min(adjustedEndAngle, maxAngle - THETA);
     } else {
-      adjustedStartTime = startTime;
-      adjustedEndTime = Math.max(endTime, minTime);
+      adjustedEndAngle = Math.max(adjustedEndAngle, minAngle + THETA);
     }
 
-    if (isOutOfRange(adjustedStartTime, adjustedEndTime, minTime, maxTime)) return;
-
-    draw(adjustedStartTime, adjustedEndTime);
+    draw(adjustedStartAngle, adjustedEndAngle, clockwise);
   };
 
   const onMouseDown = (mouseDownEvent) => {
     const { target } = mouseDownEvent;
-    const { x, y } = getCoordinatesInCanvas(mouseDownEvent);
-    const startTime = getTimeByCoordinates(x, y);
-    if (isFilled(startTime)) return;
+    const { x: startX, y: startY } = getCoordinatesInCanvas(mouseDownEvent);
+    const startAngle = getAngleByCoordinates(startX, startY);
+    if (isFilled(startAngle)) {
+      return;
+    }
 
-    const [minTime, maxTime] = getMovableRange(startTime);
+    const [minAngle, maxAngle] = getMovableRange(startAngle);
 
     const onMouseMove = (event) => {
-      const endTime = getEndTimeByEvent(event);
-      setAdjustedTime(startTime, endTime, minTime, maxTime);
+      const { x: endX, y: endY } = getCoordinatesInCanvas(event);
+      move(startX, startY, endX, endY, minAngle, maxAngle);
     };
 
     const onMouseUp = (event) => {
       target.removeEventListener('mousemove', onMouseMove);
-      const endTime = getEndTimeByEvent(event);
-      setAdjustedTime(startTime, endTime, minTime, maxTime);
+      const { x: endX, y: endY } = getCoordinatesInCanvas(event);
+      move(startX, startY, endX, endY, minAngle, maxAngle);
     };
 
     const onClick = () => target.removeEventListener('mouseup', onMouseUp);

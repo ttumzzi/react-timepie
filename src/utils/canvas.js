@@ -1,6 +1,7 @@
 import {
   CANVAS_MIDDLE, CANVAS_SIZE, HOUR_PARTITION, RADIUS, THETA,
 } from './canvas_constant';
+import COLOR from './color';
 import { getColorById } from './utils';
 
 export const clearCanvas = (context) => {
@@ -22,28 +23,19 @@ export const drawCircularSectorByTime = (context, startMin, endMin, color = null
   context.fill();
 };
 
-export const getTimeByCoordinates = (x, y) => {
-  const adjustedX = x - CANVAS_MIDDLE;
-  const adjustedY = CANVAS_MIDDLE - y;
-  const angle = Math.atan(adjustedX / adjustedY);
-  const time = Math.floor(angle / THETA);
-  if (time >= 0 && adjustedX >= 0) {
-    return time * 10;
-  }
-  if (time <= 0 && adjustedX >= 0) {
-    return (72 + time) * 10;
-  }
-  if (time >= 0 && adjustedX <= 0) {
-    return (72 + time) * 10;
-  }
-  if (time <= 0 && adjustedX <= 0) {
-    return (144 + time) * 10;
-  }
-  return 0;
-};
-
-export const getCoordinatesInCanvas = ({ clientX, clientY, target }) => {
-  const x = clientX - target.getBoundingClientRect().left;
-  const y = clientY - target.getBoundingClientRect().top;
-  return { x, y };
+export const drawCircularSector = (context,
+  startAngle,
+  endAngle,
+  isClockwise,
+  color = COLOR.primaryColor) => {
+  const offsetAngle = Math.PI * (3 / 2);
+  const newStartAngle = Math.ceil((startAngle + offsetAngle) / THETA) * THETA
+  + THETA * (isClockwise ? 0 : 1);
+  const newEndAngle = Math.ceil((endAngle + offsetAngle) / THETA) * THETA
+  + THETA * (isClockwise ? 1 : -1);
+  context.fillStyle = color || getColorById(startAngle);
+  context.beginPath();
+  context.moveTo(CANVAS_MIDDLE, CANVAS_MIDDLE);
+  context.arc(CANVAS_MIDDLE, CANVAS_MIDDLE, RADIUS, newStartAngle, newEndAngle, !isClockwise);
+  context.fill();
 };

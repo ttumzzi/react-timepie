@@ -8,7 +8,6 @@ export const clearCanvas = (context) => {
 };
 
 export const drawCircularSectorByTime = (context, startMin, endMin, color = null) => {
-  console.log({ startMin, endMin });
   const HOUR24_TO_MIN = 24 * 60;
   const angleOffset = Math.PI * (3 / 2);
 

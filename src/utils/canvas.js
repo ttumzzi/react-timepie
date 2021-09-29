@@ -31,8 +31,7 @@ export const drawCircularSector = (context,
   const offsetAngle = Math.PI * (3 / 2);
   const newStartAngle = Math.ceil((startAngle + offsetAngle) / THETA) * THETA
   + THETA * (isClockwise ? 0 : 1);
-  const newEndAngle = Math.ceil((endAngle + offsetAngle) / THETA) * THETA
-  + THETA * (isClockwise ? 1 : -1);
+  const newEndAngle = Math.ceil((endAngle + offsetAngle) / THETA) * THETA;
   context.fillStyle = color || getColorById(startAngle);
   context.beginPath();
   context.moveTo(CANVAS_MIDDLE, CANVAS_MIDDLE);

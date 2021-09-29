@@ -76,8 +76,6 @@ const NewCircularSector = () => {
       }, 2 * Math.PI);
     }
 
-    if (minimum > maximum) maximum += Math.PI * 2;
-
     return [minimum, maximum];
   };
 
@@ -86,23 +84,75 @@ const NewCircularSector = () => {
     drawCircularSector(context, startAngle, endAngle, clockwise);
   };
 
-  const move = (startX, startY, endX, endY, minAngle, maxAngle) => {
-    const startAngle = getAngleByCoordinates(startX, startY);
+  const move = ((startX, startY, endX, endY, minAngle, maxAngle) => {
     const clockwise = isClockwise(startX, startY, endX, endY);
     const angleMovement = getAngleMovement(startX, startY, endX, endY, clockwise);
 
-    let adjustedStartAngle = startAngle;
-    let adjustedEndAngle = startAngle + angleMovement * (clockwise ? 1 : -1);
+    const startAngle = getAngleByCoordinates(startX, startY);
+    let endAngle = startAngle + angleMovement * (clockwise ? 1 : -1);
+    if (endAngle > 2 * Math.PI) endAngle -= 2 * Math.PI;
+    if (endAngle < 0) endAngle += 2 * Math.PI;
 
     if (clockwise) {
-      adjustedStartAngle = Math.max(adjustedStartAngle, minAngle);
-      adjustedEndAngle = Math.min(adjustedEndAngle, maxAngle - THETA);
-    } else {
-      adjustedEndAngle = Math.max(adjustedEndAngle, minAngle + THETA);
+      if (minAngle > maxAngle) {
+        if (startAngle > endAngle) {
+          if (startAngle >= 0 && startAngle <= maxAngle) {
+            draw(startAngle, maxAngle, clockwise);
+            return;
+          }
+          draw(startAngle, Math.min(endAngle, maxAngle), clockwise);
+          return;
+        }
+        if (startAngle > minAngle && startAngle <= Math.PI * 2) {
+          draw(startAngle, endAngle, clockwise);
+          return;
+        }
+
+        draw(startAngle, Math.min(endAngle, maxAngle), clockwise);
+        return;
+      }
+
+      if (startAngle > endAngle) {
+        draw(startAngle, maxAngle, clockwise);
+        return;
+      }
+
+      if (endAngle > minAngle && endAngle < maxAngle) {
+        draw(startAngle, Math.min(endAngle, maxAngle));
+        return;
+      }
+      draw(startAngle, maxAngle, clockwise);
+      return;
     }
 
-    draw(adjustedStartAngle, adjustedEndAngle, clockwise);
-  };
+    if (minAngle > maxAngle) {
+      if (startAngle < endAngle) {
+        if (startAngle >= minAngle && startAngle <= 2 * Math.PI) {
+          draw(startAngle, minAngle, clockwise);
+          return;
+        }
+        draw(startAngle, Math.max(endAngle, minAngle), clockwise);
+        return;
+      }
+      if (startAngle >= 0 && startAngle < maxAngle) {
+        draw(startAngle, endAngle, clockwise);
+        return;
+      }
+      draw(startAngle, Math.max(endAngle, minAngle), clockwise);
+      return;
+    }
+
+    if (startAngle < endAngle) {
+      draw(startAngle, minAngle, clockwise);
+      return;
+    }
+
+    if (endAngle > minAngle && endAngle < maxAngle) {
+      draw(startAngle, Math.max(endAngle, minAngle), clockwise);
+      return;
+    }
+    draw(startAngle, minAngle, clockwise);
+  });
 
   const onMouseDown = (mouseDownEvent) => {
     const { target } = mouseDownEvent;

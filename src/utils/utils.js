@@ -16,5 +16,17 @@ const getColorById = (id) => {
   return colors[index];
 };
 
+const KEY = 'schedules';
+
+const getSchdulesFromLocalStorage = () => {
+  const item = localStorage.getItem(KEY);
+  return JSON.parse(item);
+};
+
+const setSchedulesIntoLocalStorage = (schedules) => {
+  const item = JSON.stringify(schedules);
+  localStorage.setItem(KEY, item);
+};
+
 // eslint-disable-next-line import/prefer-default-export
-export { getColorById };
+export { getColorById, getSchdulesFromLocalStorage, setSchedulesIntoLocalStorage };

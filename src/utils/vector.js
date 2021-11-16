@@ -37,7 +37,7 @@ export const isClockwise = (() => {
     const rotateAngle = (getRotateAngle(x1, y1, x2, y2));
     const movement = (getAngleMovement(x1, y1, x2, y2) * 180) / Math.PI;
 
-    if (rotateAngle < 0.5 && rotateAngle > -0.5) {
+    if (rotateAngle < 0.1 && rotateAngle > -0.1) {
       if (movement < 170 || movement > 190) {
         clockwise = rotateAngle < 0;
       }

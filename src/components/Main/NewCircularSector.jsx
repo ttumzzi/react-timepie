@@ -1,17 +1,20 @@
+import { useState } from 'react';
 import { useRecoilState } from 'recoil';
 import useCanvas from '../../hook/useCanvas';
-import { scheduleState } from '../../recoil/SCHEDULE';
+import { scheduleState } from '../../recoil/schedule';
 import { clearCanvas, drawCircularSector } from '../../utils/canvas';
 import {
   CANVAS_MIDDLE, CANVAS_SIZE, HOUR_PARTITION, THETA,
 } from '../../utils/canvas_constant';
 import { getAngleMovement, isClockwise } from '../../utils/vector';
+import NewItemModal from '../Modal/NewItemModal';
 import * as Styled from './Main.style';
 
 const NewCircularSector = () => {
   const TIME_UNIT = 60 / HOUR_PARTITION;
   const [canvas, context] = useCanvas();
   const [schedule, setSchedule] = useRecoilState(scheduleState);
+  const [isModalOpen, setModalOpen] = useState(false);
 
   const getAngleByMinutes = (minutes) => (minutes / TIME_UNIT) * THETA;
 
@@ -29,7 +32,7 @@ const NewCircularSector = () => {
   };
 
   const getAngleByCoordinates = (x, y) => {
-    const angle = Math.floor(Math.atan(x / y) / THETA) * THETA;
+    const angle = Math.atan(x / y);
 
     if (x >= 0 && y >= 0) {
       return angle;
@@ -62,7 +65,6 @@ const NewCircularSector = () => {
       if (endAngle <= angle && endAngle > minimum) minimum = endAngle;
       if (startAngle >= angle && startAngle < maximum) maximum = startAngle;
     });
-
     if (minimum === 0) {
       minimum = schedule.reduce((acc, { endMin }) => {
         const endAngle = getAngleByMinutes(endMin);
@@ -75,7 +77,6 @@ const NewCircularSector = () => {
         return (acc > startAngle ? startAngle : acc);
       }, 2 * Math.PI);
     }
-
     return [minimum, maximum];
   };
 
@@ -93,6 +94,11 @@ const NewCircularSector = () => {
     if (endAngle > 2 * Math.PI) endAngle -= 2 * Math.PI;
     if (endAngle < 0) endAngle += 2 * Math.PI;
 
+    if (schedule.length === 0) {
+      draw(startAngle, endAngle + (clockwise ? THETA : 0), clockwise);
+      return;
+    }
+
     if (clockwise) {
       if (minAngle > maxAngle) {
         if (startAngle > endAngle) {
@@ -100,15 +106,14 @@ const NewCircularSector = () => {
             draw(startAngle, maxAngle, clockwise);
             return;
           }
-          draw(startAngle, Math.min(endAngle, maxAngle), clockwise);
+          draw(startAngle, Math.min(endAngle, maxAngle - THETA) + THETA, clockwise);
           return;
         }
         if (startAngle > minAngle && startAngle <= Math.PI * 2) {
-          draw(startAngle, endAngle, clockwise);
+          draw(startAngle, endAngle + THETA, clockwise);
           return;
         }
-
-        draw(startAngle, Math.min(endAngle, maxAngle), clockwise);
+        draw(startAngle, Math.min(endAngle, maxAngle - THETA) + THETA, clockwise);
         return;
       }
 
@@ -118,9 +123,10 @@ const NewCircularSector = () => {
       }
 
       if (endAngle > minAngle && endAngle < maxAngle) {
-        draw(startAngle, Math.min(endAngle, maxAngle));
+        draw(startAngle, Math.min(endAngle, maxAngle) + THETA, clockwise);
         return;
       }
+
       draw(startAngle, maxAngle, clockwise);
       return;
     }
@@ -166,13 +172,26 @@ const NewCircularSector = () => {
 
     const onMouseMove = (event) => {
       const { x: endX, y: endY } = getCoordinatesInCanvas(event);
+      const endAngle = getAngleByCoordinates(endX, endY);
+
+      if (startAngle === endAngle) return;
+
       move(startX, startY, endX, endY, minAngle, maxAngle);
     };
 
     const onMouseUp = (event) => {
       target.removeEventListener('mousemove', onMouseMove);
       const { x: endX, y: endY } = getCoordinatesInCanvas(event);
+      const endAngle = getAngleByCoordinates(endX, endY);
+
+      if (startAngle === endAngle) {
+        console.log({ startAngle, endAngle });
+        draw(startAngle + THETA, endAngle + THETA, true);
+        return;
+      }
       move(startX, startY, endX, endY, minAngle, maxAngle);
+
+      setModalOpen(true);
     };
 
     const onClick = () => target.removeEventListener('mouseup', onMouseUp);
@@ -183,12 +202,15 @@ const NewCircularSector = () => {
   };
 
   return (
-    <Styled.Canvas
-      ref={canvas}
-      width={CANVAS_SIZE}
-      height={CANVAS_SIZE}
-      onMouseDown={onMouseDown}
-    />
+    <>
+      <Styled.Canvas
+        ref={canvas}
+        width={CANVAS_SIZE}
+        height={CANVAS_SIZE}
+        onMouseDown={onMouseDown}
+      />
+      {isModalOpen ? <NewItemModal setModalOpen={setModalOpen} /> : ''}
+    </>
   );
 };
 

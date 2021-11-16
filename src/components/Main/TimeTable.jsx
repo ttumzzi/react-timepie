@@ -3,7 +3,7 @@ import { useEffect } from 'react/cjs/react.development';
 import { useRecoilState } from 'recoil';
 import { CANVAS_SIZE } from '../../utils/canvas_constant';
 import * as Styled from './Main.style';
-import { scheduleState } from '../../recoil/SCHEDULE';
+import { scheduleState } from '../../recoil/schedule';
 import { clearCanvas, drawCircularSectorByTime } from '../../utils/canvas';
 import useCanvas from '../../hook/useCanvas';
 

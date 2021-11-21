@@ -4,7 +4,7 @@ import { useRecoilState } from 'recoil';
 import { CANVAS_SIZE } from '../../utils/canvas_constant';
 import * as Styled from './Main.style';
 import { scheduleState } from '../../recoil/schedule';
-import { clearCanvas, drawCircularSectorByTime } from '../../utils/canvas';
+import { clearCanvas, draw } from '../../utils/canvas';
 import useCanvas from '../../hook/useCanvas';
 
 const TimeTable = () => {
@@ -15,8 +15,8 @@ const TimeTable = () => {
     if (!context || !schedule) return;
 
     clearCanvas(context);
-    schedule.forEach(({ startMin, endMin }) => {
-      drawCircularSectorByTime(context, startMin, endMin);
+    schedule.forEach(({ startAngle, endAngle }) => {
+      draw(context, startAngle, endAngle);
     });
   }, [context, schedule]);
 

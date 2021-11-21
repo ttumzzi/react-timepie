@@ -10,7 +10,7 @@ left: 0;
 top: 0;
 `;
 
-export const Box = styled.div`
+export const Box = styled.form`
 width: 500px;
 height: 300px;
 position: absolute;

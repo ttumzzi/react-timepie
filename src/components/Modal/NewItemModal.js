@@ -7,49 +7,37 @@ import { Box, Button, Input } from './Modal.style';
 import { scheduleState } from '../../recoil/schedule';
 import { setSchedulesIntoLocalStorage } from '../../utils/utils';
 
-const NewItemModal = ({ startTime, endTime, setModalOpen }) => {
-  const [schedules, setSchedules] = useRecoilState(scheduleState);
+const NewItemModal = ({ addCallback }) => {
   const [name, setName] = useState('');
-
-  const getNewSchedule = () => ({
-    id: uniqid('schdule_'),
-    name,
-    startMin: startTime,
-    endMin: endTime,
-  });
 
   const onChange = (event) => {
     setName(event.target.value);
   };
 
-  const onClick = () => {
-    const newSchedule = getNewSchedule();
-    const newSchedules = [...schedules, newSchedule];
-    setSchedulesIntoLocalStorage(newSchedules);
-    setSchedules(newSchedules);
-    setModalOpen(false);
+  const onSubmit = (event) => {
+    event.preventDefault();
+    addCallback(name);
   };
 
   return (
     <Modal>
-      <Box>
+      <Box onSubmit={onSubmit}>
         <h1>Add new schedule!</h1>
         <Input
+          autoFocus
           maxLength="30"
           placeholder="Type new todo up to 30 characters"
           value={name}
           onChange={onChange}
         />
-        <Button type="button" onClick={onClick}>add</Button>
+        <Button type="submit">add</Button>
       </Box>
     </Modal>
   );
 };
 
 NewItemModal.propTypes = {
-  startTime: PropTypes.number.isRequired,
-  endTime: PropTypes.number.isRequired,
-  setModalOpen: PropTypes.func.isRequired,
+  addCallback: PropTypes.func.isRequired,
 };
 
 export default NewItemModal;

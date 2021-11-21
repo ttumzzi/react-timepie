@@ -1,4 +1,4 @@
-const getColorById = (id) => {
+const getColor = (idx) => {
   const colors = [
     '#52D08C',
     '#416BF0',
@@ -12,9 +12,21 @@ const getColorById = (id) => {
     '#473DE0',
     '#FF4560',
   ];
-  const index = id % (colors.length);
+  const index = idx % (colors.length);
   return colors[index];
 };
 
+const KEY = 'schedules';
+
+const getSchdulesFromLocalStorage = () => {
+  const item = localStorage.getItem(KEY);
+  return JSON.parse(item) || [];
+};
+
+const setSchedulesIntoLocalStorage = (schedules) => {
+  const item = JSON.stringify(schedules);
+  localStorage.setItem(KEY, item);
+};
+
 // eslint-disable-next-line import/prefer-default-export
-export { getColorById };
+export { getColor, getSchdulesFromLocalStorage, setSchedulesIntoLocalStorage };

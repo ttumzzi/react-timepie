@@ -2,7 +2,6 @@ import styled from 'styled-components';
 
 const Main = styled.main`
   text-align: center;
-  position: relative;
 `;
 
 const Canvas = styled.canvas`

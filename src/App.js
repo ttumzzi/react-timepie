@@ -1,14 +1,16 @@
-import { RecoilRoot } from 'recoil';
+import { useEffect } from 'react';
+import { useRecoilState } from 'recoil';
 import styled from 'styled-components';
 import Aside from './components/Aside/Aside';
 import Header from './components/Header/Header';
 import Main from './components/Main/Main';
 import Navigation from './components/Navigation/Navigation';
-import COLOR from './utils/color';
+import { scheduleState } from './recoil/schedule';
+import { getSchdulesFromLocalStorage } from './utils/utils';
 
 const AppContainer = styled.div`
   width: 100%;
-  height: 100vh;
+  height: 98vh;
   margin: 0;
   padding: 0;
 `;
@@ -40,17 +42,21 @@ const ContentContainer = styled.div`
 `;
 
 function App() {
+  const [schedules, setSchedules] = useRecoilState(scheduleState);
+
+  useEffect(() => {
+    setSchedules(getSchdulesFromLocalStorage());
+  }, []);
+
   return (
-    <RecoilRoot>
-      <AppContainer>
-        <Header />
-        <ContentContainer>
-          <Navigation />
-          <Main />
-          <Aside />
-        </ContentContainer>
-      </AppContainer>
-    </RecoilRoot>
+    <AppContainer>
+      <Header />
+      <ContentContainer>
+        <Navigation />
+        <Main />
+        <Aside />
+      </ContentContainer>
+    </AppContainer>
   );
 }
 
